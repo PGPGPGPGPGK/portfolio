@@ -1,82 +1,65 @@
-const topbar = document.getElementById('topbar');
-const portrait = document.getElementById('heroPortrait');
-const modal = document.getElementById('portraitModal');
-const modalClose = document.getElementById('portraitClose');
-const portraitImg = document.getElementById('heroPortraitImg');
-const portraitModalImg = document.getElementById('portraitModalImg');
-const brand = document.querySelector('.brand');
+document.getElementById('year').textContent = new Date().getFullYear();
+const io = new IntersectionObserver(entries => entries.forEach(e => { if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}), {threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+const topbar=document.getElementById('topbar');
+addEventListener('scroll',()=>topbar.classList.toggle('scrolled',scrollY>10),{passive:true});
 
-window.addEventListener('scroll', () => {
-  topbar?.classList.toggle('scrolled', window.scrollY > 20);
-});
+const portrait=document.getElementById('heroPortrait');
+const portraitModal=document.getElementById('portraitModal');
+const portraitClose=document.getElementById('portraitClose');
 
-const revealEls = document.querySelectorAll('.reveal');
-if ('IntersectionObserver' in window) {
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('in');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.12 });
-  revealEls.forEach(el => observer.observe(el));
-} else {
-  revealEls.forEach(el => el.classList.add('in'));
+function updatePortrait(){
+  const mobile=innerWidth<=620;
+  const headerH=mobile?74:76;
+  const miniSize=mobile?36:44;
+  const fullW=innerWidth;
+  const fullH=Math.max(420,innerHeight-headerH);
+  const end=Math.max(280,Math.min(620,innerHeight*.62));
+  const p=Math.max(0,Math.min(1,scrollY/end));
+  const ease=1-Math.pow(1-p,3);
+  const nav=document.querySelector('.nav');
+  const navRect=nav.getBoundingClientRect();
+  const targetLeft=navRect.left;
+  const targetTop=navRect.top+Math.max(0,(navRect.height-miniSize)/2);
+  const left=targetLeft*ease;
+  const top=headerH+(targetTop-headerH)*ease;
+  const width=fullW+(miniSize-fullW)*ease;
+  const height=fullH+(miniSize-fullH)*ease;
+  const radius=(miniSize/2)*ease;
+  portrait.style.left=left+'px';
+  portrait.style.top=top+'px';
+  portrait.style.width=width+'px';
+  portrait.style.height=height+'px';
+  portrait.style.borderRadius=radius+'px';
+  portrait.style.opacity=String(.44 + .56*ease);
+  portrait.style.zIndex=p>.72?'60':'2';
+  const isMini=p>.88;
+  portrait.classList.toggle('is-mini',isMini);
+  topbar.classList.toggle('portrait-mini',isMini);
+  portrait.setAttribute('aria-hidden',isMini?'false':'true');
 }
-
-const updatePortrait = () => {
-  if (!portrait) return;
-  const hero = document.querySelector('.hero');
-  if (!hero) return;
-  const heroRect = hero.getBoundingClientRect();
-  const progress = Math.min(1, Math.max(0, (0 - heroRect.top) / Math.max(1, hero.offsetHeight - 90)));
-  const mini = progress > 0.82;
-  portrait.classList.toggle('is-mini', mini);
-  topbar?.classList.toggle('portrait-mini', mini);
-
-  if (!mini) {
-    portrait.style.left = '0px';
-    portrait.style.top = '76px';
-    portrait.style.width = '100vw';
-    portrait.style.height = 'calc(100vh - 76px)';
-    portrait.style.borderRadius = '0px';
-    portrait.setAttribute('aria-hidden', 'true');
-    return;
+let portraitTick=false;
+function requestPortraitUpdate(){
+  if(!portraitTick){
+    requestAnimationFrame(()=>{updatePortrait();portraitTick=false});
+    portraitTick=true;
   }
-
-  const brandRect = brand?.getBoundingClientRect();
-  const size = 42;
-  const left = brandRect ? Math.max(10, brandRect.left) : 16;
-  portrait.style.left = `${left}px`;
-  portrait.style.top = '17px';
-  portrait.style.width = `${size}px`;
-  portrait.style.height = `${size}px`;
-  portrait.style.borderRadius = '50%';
-  portrait.setAttribute('aria-hidden', 'false');
-};
-
-window.addEventListener('scroll', updatePortrait, { passive: true });
-window.addEventListener('resize', updatePortrait);
+}
+addEventListener('scroll',requestPortraitUpdate,{passive:true});
+addEventListener('resize',requestPortraitUpdate,{passive:true});
 updatePortrait();
 
-const openPortrait = () => {
-  if (!portrait?.classList.contains('is-mini') || !modal) return;
-  if (portraitImg && portraitModalImg) portraitModalImg.src = portraitImg.src;
-  modal.classList.add('open');
-  modal.setAttribute('aria-hidden', 'false');
+portrait.addEventListener('click',()=>{
+  if(!portrait.classList.contains('is-mini')) return;
+  portraitModal.classList.add('open');
+  portraitModal.setAttribute('aria-hidden','false');
   document.body.classList.add('modal-open');
-  modalClose?.focus();
-};
-const closePortrait = () => {
-  if (!modal) return;
-  modal.classList.remove('open');
-  modal.setAttribute('aria-hidden', 'true');
+});
+function closePortrait(){
+  portraitModal.classList.remove('open');
+  portraitModal.setAttribute('aria-hidden','true');
   document.body.classList.remove('modal-open');
-};
-portrait?.addEventListener('click', openPortrait);
-modalClose?.addEventListener('click', closePortrait);
-modal?.addEventListener('click', e => { if (e.target === modal) closePortrait(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closePortrait(); });
-
-document.getElementById('year').textContent = new Date().getFullYear();
+}
+portraitClose.addEventListener('click',closePortrait);
+portraitModal.addEventListener('click',e=>{if(e.target===portraitModal)closePortrait()});
+addEventListener('keydown',e=>{if(e.key==='Escape')closePortrait()});
