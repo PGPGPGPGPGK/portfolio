@@ -63,3 +63,8 @@ function closePortrait(){
 portraitClose.addEventListener('click',closePortrait);
 portraitModal.addEventListener('click',e=>{if(e.target===portraitModal)closePortrait()});
 addEventListener('keydown',e=>{if(e.key==='Escape')closePortrait()});
+
+// Mobile fix: keep the Master's thesis preview fully inside its card.
+const thesisMobileFix=document.createElement('style');
+thesisMobileFix.textContent=`@media(max-width:700px){.chapter.reverse{min-width:0}.chapter.reverse .media{width:100%;max-width:100%;min-width:0}.chapter.reverse .media>a{display:block;width:100%;max-width:100%}.chapter.reverse .media img{display:block;width:100%;max-width:100%;height:auto;aspect-ratio:auto;object-fit:contain;object-position:center;transform:none}.chapter.reverse .media:hover img{transform:none}}`;
+document.head.appendChild(thesisMobileFix);
