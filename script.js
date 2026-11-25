@@ -1,4 +1,5 @@
-document.getElementById('year').textContent = new Date().getFullYear();
+const year = document.getElementById('year');
+if (year) year.textContent = new Date().getFullYear();
 const io = new IntersectionObserver(entries => entries.forEach(e => { if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}), {threshold:.12});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 const topbar=document.getElementById('topbar');
